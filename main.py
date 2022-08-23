@@ -15,8 +15,15 @@ def algoritmoQuineMcClusky(cantidadVariables, minterminosUtilizados):
     #[[indicesMinterminos], [valorBinarioMintermino], cantidadUnos]
     minterminosAgrupadosCantidadUnos = agruparMinterminosCantidadUnos(minterminos, cantidadVariables)
 
-    
-    posibleCrearOtraTabla = verificarPosibleCrearOtraTabla(minterminosAgrupadosCantidadUnos)
+    posibleSimplificar = verificarPosibleSimplificar(minterminosAgrupadosCantidadUnos)
+
+    while (posibleSimplificar):
+        minterminosAgrupadosCantidadUnos = simplificar(minterminosAgrupadosCantidadUnos, cantidadVariables)
+        posibleSimplificar = verificarPosibleSimplificar(minterminosAgrupadosCantidadUnos)
+
+    print(minterminosAgrupadosCantidadUnos)
+    implicantesPrimosEsenciales = encontrarImplicantesPrimosEsenciales(minterminosAgrupadosCantidadUnos) 
+
 
     return [0,0]
 
@@ -63,11 +70,67 @@ def agruparMinterminosCantidadUnos(minterminos, cantidadVariables):
                 minterminosAgrupadosPosibleCantidadUnos = minterminosAgrupadosPosibleCantidadUnos + [[mintermino[0],mintermino[1],posibleCantidadUnos]]
         if minterminosAgrupadosPosibleCantidadUnos != []:
             minterminosAgrupadosCantidadUnos = minterminosAgrupadosCantidadUnos + [minterminosAgrupadosPosibleCantidadUnos]
-    print(minterminosAgrupadosCantidadUnos)
+    return minterminosAgrupadosCantidadUnos
+    
+def verificarPosibleSimplificar(minterminosAgrupadosCantidadUnos):
+    for grupoCantidadUnosComparar in minterminosAgrupadosCantidadUnos:
+        cantidadUnos = grupoCantidadUnosComparar[0][2]
+        for grupoCantidadUnosComparado in minterminosAgrupadosCantidadUnos:
+            if cantidadUnos+1 == grupoCantidadUnosComparado[0][2]:
+                for minterminoComparar in grupoCantidadUnosComparar:
+                    for minterminoComparado in grupoCantidadUnosComparado:
+                        diferenciasBit = 0
+                        for indiceValorLogico in range(0, len(minterminoComparar[1])):
+                            if minterminoComparar[1][indiceValorLogico] != minterminoComparado[1][indiceValorLogico]:
+                                diferenciasBit = diferenciasBit + 1
+                        if diferenciasBit == 1:
+                            return True
+    return False
+
+def simplificar(minterminosAgrupadosCantidadUnos, cantidadVariables):
+    nuevosMinterminos = []
+    for grupoCantidadUnosComparar in minterminosAgrupadosCantidadUnos:
+        cantidadUnos = grupoCantidadUnosComparar[0][2]
+        for grupoCantidadUnosComparado in minterminosAgrupadosCantidadUnos:
+            if cantidadUnos+1 == grupoCantidadUnosComparado[0][2]:
+                for minterminoComparar in grupoCantidadUnosComparar:
+                    for minterminoComparado in grupoCantidadUnosComparado:
+                        diferenciasBit = 0
+                        indiceValorLogicoDiferencia = 0
+                        for indiceValorLogico in range(0, len(minterminoComparar[1])):
+                            if minterminoComparar[1][indiceValorLogico] != minterminoComparado[1][indiceValorLogico]:
+                                diferenciasBit = diferenciasBit + 1
+                                indiceValorLogicoDiferencia = indiceValorLogico
+                        if diferenciasBit == 1:
+                            minterminosSimplificados = minterminoComparar[0] + minterminoComparado[0]
+                            valorLogicoSimplificado = []
+                            for indiceValorLogicoSimplificado in range(0, len(minterminoComparar[1])):
+                                if indiceValorLogicoSimplificado == indiceValorLogicoDiferencia:
+                                    valorLogicoSimplificado = valorLogicoSimplificado + ["-"]
+                                else:
+                                    valorLogicoSimplificado = valorLogicoSimplificado + [minterminoComparar[1][indiceValorLogicoSimplificado]]
+                            nuevosMinterminos = nuevosMinterminos + [[minterminosSimplificados, valorLogicoSimplificado, cantidadUnos]]
+    minterminosFinales = nuevosMinterminos
+    for grupoCantidadUnos in minterminosAgrupadosCantidadUnos:
+        for mintermino in grupoCantidadUnos:
+            seSimplifico = False
+            for minterminoSimplificado in nuevosMinterminos:
+                cantidadCoincidencias = 0
+                for minterminoUtilizado in mintermino[0]:
+                    print(minterminoUtilizado)
+                    cantidadCoincidencias = 0
+                    for minterminoUtilizadoSimplificacion in minterminoSimplificado[0]:
+                        if minterminoUtilizado == minterminoUtilizadoSimplificacion:
+                            cantidadCoincidencias = cantidadCoincidencias + 1
+                if cantidadCoincidencias != len(mintermino[0]):
+                    minterminosFinales = minterminosFinales + [mintermino]
+    minterminosFinales = agruparMinterminosCantidadUnos(minterminosFinales, cantidadVariables)
+    return minterminosFinales
+
+def encontrarImplicantesPrimosEsenciales(minterminosAgrupadosCantidadUnos):
+    implicantesPrimosEsenciales = []
     
 
-def verificarPosibleCrearOtraTabla(minterminosAgrupadosCantidadUnos):
-    pass
-
+    
 
 main()
